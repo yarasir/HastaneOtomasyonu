@@ -23,23 +23,74 @@ public class HastaneOtomasyonu extends JFrame {
     private CardLayout cardLayout;
     private String currentUserRole;
     private String currentUsername;
+
+    private static final Color PRIMARY_COLOR = new Color(41, 128, 185);    // Ana mavi
+    private static final Color SECONDARY_COLOR = new Color(52, 152, 219);  // Açık mavi
+    private static final Color BACKGROUND_COLOR = new Color(236, 240, 241); // Açık gri
+    private static final Color PANEL_COLOR = Color.WHITE;
+    private static final Color TEXT_COLOR = new Color(44, 62, 80);         // Koyu lacivert
+    private static final Color SUCCESS_COLOR = new Color(46, 204, 113);    // Yeşil
+    private static final Color ERROR_COLOR = new Color(231, 76, 60);       // Kırmızı
+    private static final Color HOVER_COLOR = new Color(52, 152, 219);      // Hover mavi
+
+    // Font sabitleri
+    private static final Font TITLE_FONT = new Font("Segoe UI", Font.BOLD, 24);
+    private static final Font BUTTON_FONT = new Font("Segoe UI", Font.BOLD, 14);
+    private static final Font LABEL_FONT = new Font("Segoe UI", Font.PLAIN, 14);
+
     public HastaneOtomasyonu() {
         setTitle("Hastane Randevu Sistemi");
-        setSize(800, 600);
+        setSize(1000, 700); // Pencere boyutunu büyüttüm
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setResizable(false); // Boyut değiştirmeyi engelle
 
+        // Genel tema ayarları
+        try {
+            UIManager.put("Panel.background", PANEL_COLOR);
+            UIManager.put("OptionPane.background", PANEL_COLOR);
+            UIManager.put("Button.font", BUTTON_FONT);
+            UIManager.put("Label.font", LABEL_FONT);
+            UIManager.put("TextField.font", LABEL_FONT);
+            UIManager.put("ComboBox.font", LABEL_FONT);
+            UIManager.put("Table.font", LABEL_FONT);
+            UIManager.put("Table.gridColor", new Color(230, 230, 230));
+            UIManager.put("Table.selectionBackground", SECONDARY_COLOR);
+            UIManager.put("Table.selectionForeground", Color.WHITE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Veritabanı bağlantısı
         baglantiKur();
 
+        // Ana panel ayarları
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
+        mainPanel.setBackground(BACKGROUND_COLOR);
 
+        // İçerik paneli ayarları
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBackground(BACKGROUND_COLOR);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Alt panelleri oluştur
         olusturKarsilamaEkrani();
         olusturGirisEkrani();
         olusturHastaRandevuEkrani();
         olusturYonetimPaneli();
 
-        add(mainPanel);
+        // Ana paneli ekle
+        contentPanel.add(mainPanel, BorderLayout.CENTER);
+        add(contentPanel);
+
+        // Pencere ikonunu ayarla (opsiyonel)
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/icons/hospital_icon.png"));
+            setIconImage(icon.getImage());
+        } catch (Exception e) {
+            // İkon bulunamazsa sessizce devam et
+        }
     }
 
     private void baglantiKur() {
@@ -50,36 +101,67 @@ public class HastaneOtomasyonu extends JFrame {
             System.exit(1);
         }
     }
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(BUTTON_FONT);
+        button.setBackground(PRIMARY_COLOR);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setOpaque(true);
 
+        // Hover efekti
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(HOVER_COLOR);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(PRIMARY_COLOR);
+            }
+        });
+
+        return button;
+    }
     private void olusturKarsilamaEkrani() {
         JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(BACKGROUND_COLOR);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(15, 15, 15, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Başlık
         JLabel baslik = new JLabel("Hastane Yönetim Sistemi", SwingConstants.CENTER);
-        baslik.setFont(new Font("Arial", Font.BOLD, 24));
+        baslik.setFont(TITLE_FONT);
+        baslik.setForeground(PRIMARY_COLOR);
         gbc.gridx = 0; gbc.gridy = 0;
         gbc.gridwidth = 2;
         panel.add(baslik, gbc);
 
-        // Admin Giriş Butonu
-        JButton btnAdminGiris = new JButton("Admin Girişi");
-        gbc.gridx = 0; gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        panel.add(btnAdminGiris, gbc);
+        // Butonlar için panel
+        JPanel butonPanel = new JPanel(new GridLayout(3, 1, 0, 15));
+        butonPanel.setBackground(BACKGROUND_COLOR);
 
-        // Doktor Giriş Butonu
-        JButton btnDoktorGiris = new JButton("Doktor Girişi");
-        gbc.gridx = 1; gbc.gridy = 1;
-        panel.add(btnDoktorGiris, gbc);
+        // Butonları oluştur ve stilleri uygula
+        JButton btnAdminGiris = createStyledButton("Admin Girişi");
+        JButton btnDoktorGiris = createStyledButton("Doktor Girişi");
+        JButton btnHastaIslemleri = createStyledButton("Hasta İşlemleri");
 
-        // Hasta İşlemleri Butonu
-        JButton btnHastaIslemleri = new JButton("Hasta İşlemleri");
-        gbc.gridx = 0; gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        panel.add(btnHastaIslemleri, gbc);
+        // Buton boyutlarını ayarla
+        Dimension buttonSize = new Dimension(250, 45);
+        btnAdminGiris.setPreferredSize(buttonSize);
+        btnDoktorGiris.setPreferredSize(buttonSize);
+        btnHastaIslemleri.setPreferredSize(buttonSize);
+
+        butonPanel.add(btnAdminGiris);
+        butonPanel.add(btnDoktorGiris);
+        butonPanel.add(btnHastaIslemleri);
+
+        gbc.gridy = 1;
+        gbc.insets = new Insets(30, 15, 15, 15);
+        panel.add(butonPanel, gbc);
 
         // Event handlers
         btnAdminGiris.addActionListener(e -> girisDialogGoster("ADMIN"));
